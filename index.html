@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>yangswing-maple-calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117; --bg2: #181c27; --bg3: #1f2535;
+      --border: #2a3045; --border2: #333d55;
+      --text: #e8ecf4; --text2: #8b93a8; --text3: #555f7a;
+      --accent: #f0a500; --green: #3ecf8e;
+      --radius: 12px; --radius-sm: 8px;
+    }
+    body { background:var(--bg); color:var(--text); font-family:'Noto Sans KR',sans-serif; min-height:100vh; }
+    header { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 24px; display:flex; align-items:center; gap:12px; height:56px; position:sticky; top:0; z-index:10; }
+    .logo { font-family:'JetBrains Mono',monospace; font-weight:600; font-size:15px; color:var(--accent); letter-spacing:-0.5px; }
+    .logo span { color:var(--text2); }
+    nav { display:flex; gap:2px; margin-left:auto; }
+    .tab-btn { padding:6px 14px; font-size:13px; font-family:'Noto Sans KR',sans-serif; font-weight:500; border:none; border-radius:var(--radius-sm); background:transparent; color:var(--text2); cursor:pointer; transition:all .15s; }
+    .tab-btn:hover { color:var(--text); background:var(--bg3); }
+    .tab-btn.active { background:var(--accent); color:#000; }
+    main { max-width:560px; margin:0 auto; padding:28px 20px 60px; }
+    .page { display:none; flex-direction:column; gap:16px; }
+    .page.active { display:flex; }
+    .card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+    .card-title { font-size:11px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:.8px; margin-bottom:14px; }
+    .input-label { font-size:12px; color:var(--text3); margin-bottom:6px; }
+    .input-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .input-row:last-child { margin-bottom:0; }
+    input[type="text"] { flex:1; background:var(--bg3); border:1px solid var(--border2); border-radius:var(--radius-sm); color:var(--text); font-size:15px; font-family:'JetBrains Mono',monospace; padding:9px 13px; outline:none; transition:border-color .15s; width:100%; }
+    input[type="text"]:focus { border-color:var(--accent); }
+    input[type="text"]::placeholder { color:var(--text3); font-size:13px; }
+    .unit { font-size:12px; color:var(--text3); white-space:nowrap; min-width:fit-content; }
+    .result-grid { display:grid; gap:8px; margin-top:14px; }
+    .result-box { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; text-align:center; }
+    .result-box .label { font-size:11px; color:var(--text3); margin-bottom:5px; }
+    .result-box .value { font-size:17px; font-weight:700; font-family:'JetBrains Mono',monospace; color:var(--accent); }
+    .result-box .sub { font-size:10px; color:var(--text3); margin-top:3px; }
+    .qty-table { display:flex; flex-direction:column; gap:4px; margin-top:12px; }
+    .qty-row { display:flex; justify-content:space-between; align-items:center; padding:7px 12px; background:var(--bg3); border-radius:6px; font-size:13px; }
+    .qty-row .qty-label { color:var(--text2); }
+    .qty-row .qty-value { font-family:'JetBrains Mono',monospace; font-weight:600; color:var(--text); }
+    .scenario { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; margin-bottom:8px; }
+    .scenario:last-child { margin-bottom:0; }
+    .scenario-tag { display:inline-block; font-size:10px; font-weight:700; letter-spacing:.5px; background:var(--border2); color:var(--text3); border-radius:4px; padding:2px 7px; margin-bottom:7px; }
+    .scenario-desc { font-size:11px; color:var(--text3); margin-bottom:6px; font-family:'JetBrains Mono',monospace; }
+    .scenario-value { font-size:20px; font-weight:700; font-family:'JetBrains Mono',monospace; color:var(--green); }
+    .scenario-value.empty { color:var(--text3); font-size:13px; font-weight:400; }
+    .empty-state { text-align:center; padding:20px 0 8px; font-size:13px; color:var(--text3); }
+    .divider { height:1px; background:var(--border); margin:14px 0; }
+    .info-box { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; margin-bottom:16px; font-size:13px; line-height:1.9; color:var(--text2); }
+    .res-row { display:flex; justify-content:space-between; align-items:center; padding:11px 14px; background:var(--bg3); border-radius:var(--radius-sm); margin-bottom:8px; }
+    .res-row:last-child { margin-bottom:0; }
+    .res-row .rr-label { font-size:13px; color:var(--text2); }
+    .res-row .rr-val { font-size:16px; font-weight:600; font-family:'JetBrains Mono',monospace; color:var(--accent); }
+    @media(max-width:480px) { header{padding:0 16px;} .logo{font-size:13px;} .tab-btn{padding:6px 10px;font-size:12px;} main{padding:20px 14px 60px;} }
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo">yangswing<span>-maple-calc</span></div>
+  <nav>
+    <button class="tab-btn active" id="tab-meso" onclick="switchTab('meso')">메소/메포/조각</button>
+    <button class="tab-btn" id="tab-material" onclick="switchTab('material')">소재비</button>
+    <button class="tab-btn" id="tab-mjak" onclick="switchTab('mjak')">M작</button>
+  </nav>
+</header>
+<main>
+
+  <!-- 메소/메포/조각 -->
+  <div class="page active" id="page-meso">
+    <div class="card">
+      <div class="card-title">기준 환율</div>
+      <div class="input-label">1억 메소 = 얼마?</div>
+      <div class="input-row">
+        <input type="text" id="basePrice" placeholder="예: 1,000" />
+        <span class="unit">원 / 1억 메소</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">메포 시세</div>
+      <div class="input-label">1억 메소 = 몇 메포?</div>
+      <div class="input-row">
+        <input type="text" id="mepoRate" placeholder="예: 2,500" />
+        <span class="unit">메포 / 1억 메소</span>
+      </div>
+      <div id="mepo-result" style="display:none;">
+        <div class="result-grid" style="grid-template-columns:1fr;">
+          <div class="result-box">
+            <div class="label">660 메포 =</div>
+            <div class="value" id="r-660mepo">-</div>
+            <div class="sub">메소</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">조각 계산기</div>
+      <div class="input-label">조각 1개의 메소 가격</div>
+      <div class="input-row">
+        <input type="text" id="piecePrice" placeholder="예: 5,000,000" />
+        <span class="unit">메소</span>
+      </div>
+      <div id="piece-result" style="display:none;">
+        <div class="result-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="result-box"><div class="label">조각 1개 현금</div><div class="value" id="r-piece-won">-</div></div>
+          <div class="result-box"><div class="label">1000만 메소당</div><div class="value" id="r-per10m">-</div></div>
+        </div>
+        <div class="divider"></div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">수량별 현금 가치</div>
+        <div class="qty-table" id="qty-table"></div>
+      </div>
+      <div id="piece-empty" class="empty-state">조각 가격을 입력하면 결과가 나타납니다</div>
+    </div>
+  </div>
+
+  <!-- 소재비 -->
+  <div class="page" id="page-material">
+    <div class="card">
+      <div class="card-title">쥬니퍼베리 소재비 계산기</div>
+      <div class="input-label">쥬니퍼베리씨앗 개수</div>
+      <div class="input-row" style="margin-bottom:12px;"><input type="text" id="seedCount" placeholder="예: 100" /><span class="unit">개</span></div>
+      <div class="input-label">씨앗 1개 시세</div>
+      <div class="input-row" style="margin-bottom:12px;"><input type="text" id="seedPrice" placeholder="예: 100,000" /><span class="unit">메소</span></div>
+      <div class="input-label">씨앗오일 1개 시세</div>
+      <div class="input-row" style="margin-bottom:12px;"><input type="text" id="oilPrice" placeholder="예: 500,000" /><span class="unit">메소</span></div>
+      <div class="input-label">소재 1개 시세</div>
+      <div class="input-row"><input type="text" id="matPrice" placeholder="예: 1,000,000" /><span class="unit">메소</span></div>
+    </div>
+    <div class="card" id="mat-result" style="display:none;">
+      <div class="card-title">판매 시나리오</div>
+      <div class="scenario"><div class="scenario-tag">① 씨앗 그대로 판매</div><div class="scenario-desc" id="s1d"></div><div class="scenario-value" id="s1v">-</div></div>
+      <div class="scenario"><div class="scenario-tag">② 씨앗오일로 변환 후 판매</div><div class="scenario-desc" id="s2d"></div><div class="scenario-value" id="s2v">-</div></div>
+      <div class="scenario" style="margin-bottom:0;"><div class="scenario-tag">③ 소재로 변환 후 판매</div><div class="scenario-desc" id="s3d"></div><div class="scenario-value" id="s3v">-</div></div>
+    </div>
+    <div id="mat-empty" class="empty-state">씨앗 개수와 시세를 입력하면 결과가 나타납니다</div>
+  </div>
+
+  <!-- M작 -->
+  <div class="page" id="page-mjak">
+    <div class="card">
+      <div class="card-title">플래티넘 카르마의 가위</div>
+      <div class="info-box">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;">캐시샵 가격</div>
+        <span style="color:var(--accent);font-weight:600;">5,900</span> 캐시<br/>
+        <span style="font-size:12px;color:var(--text3);">또는</span><br/>
+        <span style="color:var(--accent);font-weight:600;">1,770</span> 마일리지 + <span style="color:var(--accent);font-weight:600;">4,130</span> 캐시
+      </div>
+      <div class="input-label">경매장 현재 시세</div>
+      <div class="input-row" style="margin-bottom:12px;">
+        <input type="text" id="mjakAuction" placeholder="예: 3,000,000,000" />
+        <span class="unit">메소</span>
+      </div>
+      <div class="input-label">1억 메소 현금가</div>
+      <div class="input-row" style="margin-bottom:12px;">
+        <input type="text" id="mjakBase" placeholder="메소탭에서 입력하거나 직접 입력" />
+        <span class="unit">원 / 1억 메소</span>
+      </div>
+      <div class="input-label">가위 개수</div>
+      <div class="input-row">
+        <input type="text" id="mjakCount" placeholder="예: 10" />
+        <span class="unit">개</span>
+      </div>
+    </div>
+    <div class="card" id="mjak-result" style="display:none;">
+      <div class="card-title">계산 결과</div>
+      <div class="res-row">
+        <span class="rr-label">가위 환산 값 (1개)</span>
+        <span class="rr-val"><span id="mjak-val">-</span> 원</span>
+      </div>
+      <div class="res-row" id="mjak-total-row" style="display:none;">
+        <span class="rr-label">가위 총 가격 (<span id="mjak-cnt-label">-</span>개)</span>
+        <span class="rr-val"><span id="mjak-total">-</span> 원</span>
+      </div>
+      <div class="res-row" id="mjak-mileage-row" style="display:none;">
+        <span class="rr-label">총 마일리지 (<span id="mjak-mileage-cnt">-</span>개 × 1,770)</span>
+        <span class="rr-val"><span id="mjak-mileage">-</span> 마일리지</span>
+      </div>
+    </div>
+    <div id="mjak-empty" class="empty-state">경매장 시세와 현금가를 입력하면 결과가 나타납니다</div>
+  </div>
+
+</main>
+<script>
+function switchTab(tab) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'mjak') syncMjakBase();
+}
+
+function addCommas(str) {
+  return str.replace(/[^0-9]/g,'').replace(/\B(?=(\d{3})+(?!\d))/g,',');
+}
+function fmtInput(el) {
+  const pos = el.selectionStart, before = el.value.length;
+  el.value = addCommas(el.value);
+  const after = el.value.length;
+  el.setSelectionRange(pos + after - before, pos + after - before);
+}
+function raw(id) { return parseFloat(document.getElementById(id).value.replace(/,/g,'')) || 0; }
+
+function fmtMeso(n) {
+  n = Math.floor(n);
+  if (n >= 100000000) {
+    const uk = Math.floor(n/100000000), man = Math.floor((n%100000000)/10000);
+    return man > 0 ? uk.toLocaleString()+'억 '+man.toLocaleString()+'만 메소' : uk.toLocaleString()+'억 메소';
+  }
+  if (n >= 10000) return Math.floor(n/10000).toLocaleString()+'만 메소';
+  return n.toLocaleString()+' 메소';
+}
+function fmtWon(n) {
+  if (n >= 10000) return (Math.round(n/100)/100).toLocaleString()+'만원';
+  if (n >= 1) return (Math.round(n*10)/10)+'원';
+  return (n*100).toFixed(1)+'전';
+}
+
+function calcMeso() {
+  const base = raw('basePrice'), mepo = raw('mepoRate'), piece = raw('piecePrice');
+  const mepoRes = document.getElementById('mepo-result');
+  if (mepo > 0) {
+    mepoRes.style.display = 'block';
+    document.getElementById('r-660mepo').textContent = Math.round(100000000/mepo*660).toLocaleString();
+  } else mepoRes.style.display = 'none';
+
+  const pieceRes = document.getElementById('piece-result'), pieceEmpty = document.getElementById('piece-empty');
+  if (piece > 0 && base > 0) {
+    pieceRes.style.display = 'block'; pieceEmpty.style.display = 'none';
+    document.getElementById('r-piece-won').textContent = fmtWon(piece*base/100000000);
+    document.getElementById('r-per10m').textContent = fmtWon(base/10);
+    document.getElementById('qty-table').innerHTML = [100,200,500,1000].map(q =>
+      `<div class="qty-row"><span class="qty-label">${q}개</span><span class="qty-value">${fmtWon(piece*base/100000000*q)}</span></div>`
+    ).join('');
+  } else { pieceRes.style.display = 'none'; pieceEmpty.style.display = 'block'; }
+}
+
+function calcMat() {
+  const sc = raw('seedCount'), sp = raw('seedPrice'), op = raw('oilPrice'), mp = raw('matPrice');
+  const res = document.getElementById('mat-result'), empty = document.getElementById('mat-empty');
+  if (sc <= 0) { res.style.display='none'; empty.style.display='block'; return; }
+  res.style.display='block'; empty.style.display='none';
+
+  document.getElementById('s1d').textContent = sc.toLocaleString()+'개 × '+sp.toLocaleString()+' 메소';
+  const s1 = document.getElementById('s1v');
+  if (sp>0){s1.textContent=fmtMeso(sc*sp);s1.className='scenario-value';}
+  else{s1.textContent='시세를 입력하세요';s1.className='scenario-value empty';}
+
+  const oilCnt = Math.floor(sc/5);
+  document.getElementById('s2d').textContent = '씨앗 ÷ 5 → '+oilCnt.toLocaleString()+'개 × '+op.toLocaleString()+' 메소';
+  const s2 = document.getElementById('s2v');
+  if (op>0){s2.textContent=fmtMeso(oilCnt*op);s2.className='scenario-value';}
+  else{s2.textContent='시세를 입력하세요';s2.className='scenario-value empty';}
+
+  const matCnt = Math.floor((Math.floor(sc/5)/5)*6);
+  document.getElementById('s3d').textContent = '(씨앗÷5)÷5×6 → '+matCnt.toLocaleString()+'개 × '+mp.toLocaleString()+' 메소';
+  const s3 = document.getElementById('s3v');
+  if (mp>0){s3.textContent=fmtMeso(matCnt*mp);s3.className='scenario-value';}
+  else{s3.textContent='시세를 입력하세요';s3.className='scenario-value empty';}
+}
+
+function syncMjakBase() {
+  const base = raw('basePrice');
+  const el = document.getElementById('mjakBase');
+  if (base > 0) el.value = base.toLocaleString();
+  calcMjak();
+}
+
+function calcMjak() {
+  const auction = raw('mjakAuction'), base = raw('mjakBase'), cnt = raw('mjakCount');
+  const res = document.getElementById('mjak-result'), empty = document.getElementById('mjak-empty');
+  if (auction > 0 && base > 0) {
+    res.style.display = 'block'; empty.style.display = 'none';
+    const val = Math.round((auction/1000000)*(base/100));
+    document.getElementById('mjak-val').textContent = val.toLocaleString();
+    const totalRow = document.getElementById('mjak-total-row');
+    const mileageRow = document.getElementById('mjak-mileage-row');
+    if (cnt > 0) {
+      totalRow.style.display = 'flex'; mileageRow.style.display = 'flex';
+      document.getElementById('mjak-cnt-label').textContent = cnt.toLocaleString();
+      document.getElementById('mjak-total').textContent = (val*cnt).toLocaleString();
+      document.getElementById('mjak-mileage-cnt').textContent = cnt.toLocaleString();
+      document.getElementById('mjak-mileage').textContent = (1770*cnt).toLocaleString();
+    } else { totalRow.style.display='none'; mileageRow.style.display='none'; }
+  } else { res.style.display='none'; empty.style.display='block'; }
+}
+
+// 이벤트 등록
+['basePrice','mepoRate','piecePrice'].forEach(id => {
+  document.getElementById(id).addEventListener('input', function(){ fmtInput(this); calcMeso(); syncMjakBase(); });
+});
+['seedCount','seedPrice','oilPrice','matPrice'].forEach(id => {
+  document.getElementById(id).addEventListener('input', function(){ fmtInput(this); calcMat(); });
+});
+['mjakAuction','mjakBase','mjakCount'].forEach(id => {
+  document.getElementById(id).addEventListener('input', function(){ fmtInput(this); calcMjak(); });
+});
+</script>
+</body>
+</html>
